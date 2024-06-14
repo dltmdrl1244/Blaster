@@ -42,11 +42,5 @@ void UOverheadWidget::ShowPlayerNetRole(APawn* InPawn)
     FString LocalRoleString = FString::Printf(TEXT("Local Role : %s"), *Role);
     FString RemoteRoleString = FString::Printf(TEXT("Remote Role : %s"), *Role);
     // SetDisplayText(LocalRoleString);
-    SetDisplayText(RemoteRoleString);
+    // SetDisplayText(RemoteRoleString);
 }
-
-// void UOverheadWidget::OnLevelRemovedFromWorld(ULevel* InLevel, UWorld* InWorld)
-// {
-//     RemoveFromParent();
-//     Super::OnLevelRemovedFromWorld(InLevel, InWorld);
-// }
