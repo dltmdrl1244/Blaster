@@ -8,6 +8,8 @@
 
 class AWeapon;
 
+#define TRACE_LENGTH 80000
+
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API UCombatComponent : public UActorComponent
@@ -32,6 +34,17 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	void FireButtonPressed(bool bPressed);
+
+	UFUNCTION(Server, Reliable)
+	void ServerFire(const FVector_NetQuantize TraceHitTarget);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastFire(const FVector_NetQuantize TraceHitTarget);
+
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
+
 private:
 	class ABlasterCharacter* Character;
 
@@ -46,4 +59,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float AimWalkSpeed;
+
+	bool bFireButtonPressed;
+	FVector HitTarget;
 };
