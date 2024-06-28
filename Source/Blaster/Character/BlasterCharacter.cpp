@@ -19,6 +19,9 @@
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
+#include "Particles/ParticleSystemComponent.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -182,6 +185,11 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 
 void ABlasterCharacter::Elim()
 {
+	if (CombatComp && CombatComp->EquippedWeapon)
+	{
+		CombatComp->EquippedWeapon->Dropped();
+	}
+
 	MulticastElim();
 	GetWorldTimerManager().SetTimer(
 		ElimTimer,
@@ -189,6 +197,16 @@ void ABlasterCharacter::Elim()
 		&ABlasterCharacter::ElimTimerFinished,
 		ElimDelay
 	);
+}
+
+void ABlasterCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	if (ElimBotComponent)
+	{
+		ElimBotComponent->DestroyComponent();
+	}
 }
 
 void ABlasterCharacter::MulticastElim_Implementation()
@@ -217,6 +235,27 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	// Disable Collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Spawn Elim Bot
+	if (ElimBotEffect)
+	{
+		FVector ElimBotSpawnLocation(GetActorLocation());
+		ElimBotSpawnLocation.Z += 200.f;
+		ElimBotComponent = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			ElimBotEffect,
+			ElimBotSpawnLocation,
+			GetActorRotation()
+		);
+	}
+	if (ElimBotSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(
+			GetWorld(),
+			ElimBotSound,
+			GetActorLocation()
+		);
+	}
 }
 
 void ABlasterCharacter::ElimTimerFinished()

@@ -27,6 +27,7 @@ public:
 	void Elim();
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
+	virtual void Destroyed() override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -168,6 +169,16 @@ private:
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* DissolveCurve;
 
+	/*
+	* Elim Bot
+	*/
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* ElimBotEffect;
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent* ElimBotComponent;
+	UPROPERTY(EditAnywhere)
+	class USoundCue* ElimBotSound;
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -180,4 +191,6 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 	FORCEINLINE bool isEliminated() const { return bElimed; }
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 };
