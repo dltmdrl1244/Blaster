@@ -31,6 +31,7 @@ public:
 	void Dropped();
 	virtual void OnRep_Owner() override;
 	void SetHUDAmmo();
+	void AddAmmo(int32 AmmoAmount);
 
 	/*
 	* Textures for the weapon crosshairs
@@ -64,6 +65,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	bool bAutomatic = true;
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue* EquipSound;
 
 protected:
 	virtual void BeginPlay() override;
@@ -137,4 +141,6 @@ public:
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	bool IsEmpty();
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE int32 GetAmmo() const { return Ammo; }
+	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 };

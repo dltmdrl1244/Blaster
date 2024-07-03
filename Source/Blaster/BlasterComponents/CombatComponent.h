@@ -127,4 +127,6 @@ private:
 
 	UFUNCTION()
 	void OnRep_CombatState();
+	int32 GetAmmoToReload();
+	void UpdateAmmoValue();
 };

@@ -122,6 +122,11 @@ void AWeapon::SetHUDAmmo()
 	}
 }
 
+void AWeapon::AddAmmo(int32 AmmoAmount)
+{
+	Ammo += AmmoAmount;
+	SetHUDAmmo();
+}
 
 void AWeapon::SpendRound()
 {
