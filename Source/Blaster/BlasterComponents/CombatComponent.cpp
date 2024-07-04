@@ -13,6 +13,7 @@
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
 #include "Sound/SoundCue.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -21,7 +22,6 @@ UCombatComponent::UCombatComponent()
 	BaseWalkSpeed = 600.f;
 	AimWalkSpeed = 400.f;
 }
-
 
 void UCombatComponent::BeginPlay()
 {

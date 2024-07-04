@@ -134,7 +134,7 @@ private:
 	EWeaponType WeaponType;
 
 public:
-	FORCEINLINE void SetWeaponState(EWeaponState State);
+	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }

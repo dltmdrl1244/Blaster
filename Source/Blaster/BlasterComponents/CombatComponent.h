@@ -9,8 +9,6 @@
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "CombatComponent.generated.h"
 
-class AWeapon;
-
 #define TRACE_LENGTH 80000
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -24,7 +22,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void EquipWeapon(AWeapon* WeaponToEquip);
+	void EquipWeapon(class AWeapon* WeaponToEquip);
 	void Reload();
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
@@ -58,8 +56,11 @@ protected:
 	void HandleReload();
 
 private:
+	UPROPERTY()
 	class ABlasterCharacter* Character;
+	UPROPERTY()
 	class ABlasterPlayerController* Controller;
+	UPROPERTY()
 	class ABlasterHUD* HUD;
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
