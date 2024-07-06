@@ -118,8 +118,13 @@ private:
 	void OnRep_CarriedAmmo();
 	TMap<EWeaponType, int32> CarriedAmmoMap;
 
+	/*
+	Start Ammo
+	*/
 	UPROPERTY(EditAnywhere)
 	int32 StartARAmmo = 30;
+	UPROPERTY(EditAnywhere)
+	int32 StartRocketAmmo = 0;
 
 	void InitializeCarriedAmmo();
 
