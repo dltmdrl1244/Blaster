@@ -91,7 +91,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::CrouchButtonPressed);
-		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::AimButtonPressed);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &ABlasterCharacter::AimButtonPressed);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimButtonReleased);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &ABlasterCharacter::FireButtonPressed);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ABlasterCharacter::FireButtonReleased);
@@ -205,18 +205,11 @@ void ABlasterCharacter::PlayReloadMontage()
 		switch (CombatComp->EquippedWeapon->GetWeaponType())
 		{
 		case EWeaponType::EWT_AssaultRifle:
-			SectionName = FName("Rifle");
-			break;
 		case EWeaponType::EWT_RocketLauncher:
-			SectionName = FName("Rifle");
-			break;
 		case EWeaponType::EWT_Pistol:
-			SectionName = FName("Rifle");
-			break;
 		case EWeaponType::EWT_SubmachineGun:
-			SectionName = FName("Rifle");
-			break;
 		case EWeaponType::EWT_Shotgun:
+		case EWeaponType::EWT_SniperRifle:
 			SectionName = FName("Rifle");
 			break;
 		}
@@ -337,6 +330,15 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	if (BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDWeaponAmmo(0);
+	}
+
+	bool bHideSniperScope = IsLocallyControlled() &&
+		CombatComp && CombatComp->bAiming &&
+		CombatComp->EquippedWeapon &&
+		CombatComp->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle;
+	if (bHideSniperScope)
+	{
+		ShowSniperScopeWidget(false);
 	}
 }
 
