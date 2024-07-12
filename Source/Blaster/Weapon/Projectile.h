@@ -65,4 +65,7 @@ private:
 	FTimerHandle DestroyTimer;
 	UPROPERTY(EditAnywhere)
 	float DestroyTime = 3.f;
+
+public:
+	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; }
 };

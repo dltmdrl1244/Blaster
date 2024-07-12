@@ -16,6 +16,7 @@
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "Blaster/Character/BlasterAnimInstance.h"
 #include "Blaster/Weapon/Projectile.h"
+#include "Components/BoxComponent.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -161,6 +162,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UCombatComponent, bAiming);
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
 	DOREPLIFETIME(UCombatComponent, CombatState);
+	DOREPLIFETIME(UCombatComponent, Grenades);
 }
 
 void UCombatComponent::SetAiming(bool bIsAiming)
@@ -399,6 +401,10 @@ void UCombatComponent::HandleReload()
 
 void UCombatComponent::ThrowGrenade()
 {
+	if (Grenades <= 0)
+	{
+		return;
+	}
 	if (CombatState != ECombatState::ECS_Unoccupied || EquippedWeapon == nullptr)
 	{
 		return;
@@ -415,16 +421,45 @@ void UCombatComponent::ThrowGrenade()
 		AttachActorToLeftHand(EquippedWeapon);
 		ShowAttachedGrenade(true);
 	}
+	if (Character && Character->HasAuthority())
+	{
+		Grenades = FMath::Clamp(Grenades - 1, 0, MaxGrenades);
+		UpdateHUDGrenades();
+	}
 }
 
 void UCombatComponent::ServerThrowGrenade_Implementation()
 {
+	if (Grenades <= 0)
+	{
+		return;
+	}
 	CombatState = ECombatState::ECS_ThrowingGrenade;
 	if (Character)
 	{
 		Character->PlayThrowGrenadeMontage();
 		AttachActorToLeftHand(EquippedWeapon);
 		ShowAttachedGrenade(true);
+	}
+	Grenades = FMath::Clamp(Grenades - 1, 0, MaxGrenades);
+	UpdateHUDGrenades();
+}
+
+void UCombatComponent::OnRep_Grenades()
+{
+	UpdateHUDGrenades();
+}
+
+void UCombatComponent::UpdateHUDGrenades()
+{
+	if (Character == nullptr)
+	{
+		return;
+	}
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDGrenades(Grenades);
 	}
 }
 
@@ -586,12 +621,18 @@ void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuant
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			World->SpawnActor<AProjectile>(
+			AProjectile* Grenade = World->SpawnActor<AProjectile>(
 				GrenadeClass,
 				StartLocation,
 				ToTarget.Rotation(),
 				SpawnParams
 			);
+			if (Grenade)
+			{
+				FCollisionQueryParams QueryParams;
+				QueryParams.AddIgnoredActor(SpawnParams.Owner);
+				Grenade->GetCollisionBox()->IgnoreActorWhenMoving(SpawnParams.Owner, true);
+			}
 		}
 	}
 }

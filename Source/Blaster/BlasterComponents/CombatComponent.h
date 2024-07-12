@@ -176,4 +176,15 @@ private:
 	int32 GetAmmoToReload();
 	void UpdateAmmoValue();
 	void UpdateShotgunAmmoValue();
+
+	UPROPERTY(ReplicatedUsing = OnRep_Grenades)
+	int32 Grenades = 4;
+	UPROPERTY(EditAnywhere)
+	int32 MaxGrenades = 9;
+	UFUNCTION()
+	void OnRep_Grenades();
+	void UpdateHUDGrenades();
+
+public:
+	FORCEINLINE int32 GetGrenades() const { return Grenades; }
 };
