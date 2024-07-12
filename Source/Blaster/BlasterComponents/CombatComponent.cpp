@@ -14,6 +14,7 @@
 #include "TimerManager.h"
 #include "Sound/SoundCue.h"
 #include "Blaster/Weapon/WeaponTypes.h"
+#include "Blaster/Character/BlasterAnimInstance.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -265,7 +266,7 @@ void UCombatComponent::FinishReloading()
 
 void UCombatComponent::UpdateAmmoValue()
 {
-	if (EquippedWeapon == nullptr)
+	if (Character == nullptr || EquippedWeapon == nullptr)
 	{
 		return;
 	}
@@ -285,6 +286,32 @@ void UCombatComponent::UpdateAmmoValue()
 	}
 
 	EquippedWeapon->AddAmmo(ReloadAmount);
+}
+
+void UCombatComponent::UpdateShotgunAmmoValue()
+{
+	if (Character == nullptr || EquippedWeapon == nullptr)
+	{
+		return;
+	}
+	EWeaponType WeaponType = EquippedWeapon->GetWeaponType();
+	if (CarriedAmmoMap.Contains(WeaponType))
+	{
+		CarriedAmmoMap[WeaponType] -= 1;
+		CarriedAmmo = CarriedAmmoMap[WeaponType];
+	}
+
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+	EquippedWeapon->AddAmmo(1);
+	bCanFire = true;
+	if (EquippedWeapon->IsFull() || CarriedAmmo == 0)
+	{
+		JumpToShotgunEnd();
+	}
 }
 
 void UCombatComponent::ServerReload_Implementation()
@@ -410,6 +437,33 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	}
 }
 
+void UCombatComponent::ShotgunShellReload()
+{
+	if (Character && Character->HasAuthority())
+	{
+		UpdateShotgunAmmoValue();
+	}
+}
+
+void UCombatComponent::JumpToShotgunEnd()
+{
+	// Jump to ShotgunEnd section
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+	if (AnimInstance && Character->GetReloadMontage())
+	{
+		AnimInstance->Montage_JumpToSection(FName("ShotgunEnd"));
+	}
+}
+
+bool UCombatComponent::IsShotgun()
+{
+	if (EquippedWeapon && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+	{
+		return true;
+	}
+	return false;
+}
+
 void UCombatComponent::Fire()
 {
 	if (CanFire())
@@ -436,7 +490,15 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize Tr
 	{
 		return;
 	}
-
+	UE_LOG(LogTemp, Warning, TEXT("Multicast fire"));
+	if (Character && CombatState == ECombatState::ECS_Reloading && IsShotgun())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Interrupt"));
+		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire(TraceHitTarget);
+		CombatState = ECombatState::ECS_Unoccupied;
+		return;
+	}
 	if (Character && CombatState == ECombatState::ECS_Unoccupied)
 	{
 		Character->PlayFireMontage(bAiming);
@@ -476,6 +538,9 @@ void UCombatComponent::FireTimerFinished()
 bool UCombatComponent::CanFire()
 {
 	if (!EquippedWeapon) return false;
+	if (!EquippedWeapon->IsEmpty() &&
+		bCanFire && CombatState == ECombatState::ECS_Reloading &&
+		IsShotgun()) return true;
 	if (EquippedWeapon->IsEmpty()) return false;
 	if (!bCanFire) return false;
 	if (CombatState != ECombatState::ECS_Unoccupied) return false;
@@ -489,6 +554,14 @@ void UCombatComponent::OnRep_CarriedAmmo()
 	if (Controller)
 	{
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+	bool bJumpToShotgunEnd = CombatState == ECombatState::ECS_Reloading &&
+		EquippedWeapon &&
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun &&
+		CarriedAmmo == 0;
+	if (bJumpToShotgunEnd)
+	{
+		JumpToShotgunEnd();
 	}
 }
 
