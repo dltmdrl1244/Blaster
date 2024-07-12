@@ -15,6 +15,7 @@
 #include "Sound/SoundCue.h"
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "Blaster/Character/BlasterAnimInstance.h"
+#include "Blaster/Weapon/Projectile.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -297,7 +298,7 @@ void UCombatComponent::ReloadEmptyWeapon()
 
 void UCombatComponent::Reload()
 {
-	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied)
+	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && EquippedWeapon && !EquippedWeapon->IsFull())
 	{
 		ServerReload();
 	}
@@ -398,7 +399,7 @@ void UCombatComponent::HandleReload()
 
 void UCombatComponent::ThrowGrenade()
 {
-	if (CombatState != ECombatState::ECS_Unoccupied)
+	if (CombatState != ECombatState::ECS_Unoccupied || EquippedWeapon == nullptr)
 	{
 		return;
 	}
@@ -412,6 +413,7 @@ void UCombatComponent::ThrowGrenade()
 	{
 		Character->PlayThrowGrenadeMontage();
 		AttachActorToLeftHand(EquippedWeapon);
+		ShowAttachedGrenade(true);
 	}
 }
 
@@ -422,6 +424,15 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 	{
 		Character->PlayThrowGrenadeMontage();
 		AttachActorToLeftHand(EquippedWeapon);
+		ShowAttachedGrenade(true);
+	}
+}
+
+void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)
+{
+	if (Character && Character->GetAttachedGrenade())
+	{
+		Character->GetAttachedGrenade()->SetVisibility(bShowGrenade);
 	}
 }
 
@@ -443,6 +454,7 @@ void UCombatComponent::OnRep_CombatState()
 		{
 			Character->PlayThrowGrenadeMontage();
 			AttachActorToLeftHand(EquippedWeapon);
+			ShowAttachedGrenade(true);
 		}
 		break;
 	}
@@ -550,6 +562,38 @@ void UCombatComponent::ThrowGrenadeFinished()
 {
 	CombatState = ECombatState::ECS_Unoccupied;
 	AttachActorToRightHand(EquippedWeapon);
+}
+
+void UCombatComponent::LaunchGrenade()
+{
+	ShowAttachedGrenade(false);
+	if (Character || Character->IsLocallyControlled())
+	{
+		ServerLaunchGrenade(HitTarget);
+	}
+}
+
+void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuantize& Target)
+{
+	ShowAttachedGrenade(false);
+	if (Character && GrenadeClass && Character->GetAttachedGrenade())
+	{
+		const FVector StartLocation = Character->GetAttachedGrenade()->GetComponentLocation();
+		FVector ToTarget = Target - StartLocation;
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = Character;
+		SpawnParams.Instigator = Character;
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			World->SpawnActor<AProjectile>(
+				GrenadeClass,
+				StartLocation,
+				ToTarget.Rotation(),
+				SpawnParams
+			);
+		}
+	}
 }
 
 void UCombatComponent::Fire()
