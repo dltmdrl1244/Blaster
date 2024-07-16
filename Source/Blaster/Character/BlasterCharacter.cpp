@@ -657,12 +657,15 @@ void ABlasterCharacter::PollInit()
 	}
 }
 
-void ABlasterCharacter::OnRep_Health()
+void ABlasterCharacter::OnRep_Health(float LastHealth)
 {
 	UpdateHUDHealth();
-	if (!bElimed)
+	if (Health < LastHealth)
 	{
-		PlayHitReactMontage();
+		if (!bElimed)
+		{
+			PlayHitReactMontage();
+		}
 	}
 }
 

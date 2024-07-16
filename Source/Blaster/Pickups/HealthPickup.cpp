@@ -22,7 +22,11 @@ void AHealthPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AA
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter)
 	{
-
+		UBuffComponent* BuffComp = BlasterCharacter->GetBuffComp();
+		if (BuffComp)
+		{
+			BuffComp->Heal(HealAmount, HealingTime);
+		}
 	}
 	Destroy();
 }
