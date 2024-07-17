@@ -38,12 +38,14 @@ APickup::APickup()
 void APickup::BeginPlay()
 {
 	Super::BeginPlay();
-
-	UE_LOG(LogTemp, Warning, TEXT("BeginPlay"));
 	if (HasAuthority())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Has Authority"));
-		OverlapSphere->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnSphereOverlap);
+		GetWorldTimerManager().SetTimer(
+			BindOverlapTimer,
+			this,
+			APickup::BindOverlapTimerFinished,
+			BindOverlapTime
+		);
 	}
 }
 
@@ -85,4 +87,9 @@ void APickup::Destroyed()
 void APickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& HitResult)
 {
 
+}
+
+void APickup::BindOverlapTimerFinished()
+{
+	OverlapSphere->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnSphereOverlap);
 }
