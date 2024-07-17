@@ -81,6 +81,7 @@ void ABlasterCharacter::BeginPlay()
 		}
 	}
 	UpdateHUDHealth();
+	UpdateHUDShield();
 
 	if (HasAuthority())
 	{
@@ -640,8 +641,12 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	{
 		return;
 	}
-	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	float DamageToHealth = FMath::Clamp(Damage - Shield, 0.f, MaxShield + MaxHealth);
+	Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
+	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
+
 	UpdateHUDHealth();
+	UpdateHUDShield();
 	PlayHitReactMontage();
 
 	if (Health <= 0.f)
