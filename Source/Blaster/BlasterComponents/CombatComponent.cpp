@@ -219,7 +219,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	{
 		return;
 	}
-	DropEquippedWeapon();
+	EnequipWeapon();
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 	AttachActorToRightHand(EquippedWeapon);
@@ -233,11 +233,18 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	Character->bUseControllerRotationYaw = true;
 }
 
-void UCombatComponent::DropEquippedWeapon()
+void UCombatComponent::EnequipWeapon()
 {
 	if (EquippedWeapon)
 	{
-		EquippedWeapon->Dropped();
+		if (EquippedWeapon->bDestroyedWeapon)
+		{
+			EquippedWeapon->Destroy();
+		}
+		else
+		{
+			EquippedWeapon->Dropped();
+		}
 	}
 }
 

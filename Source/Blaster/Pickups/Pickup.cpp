@@ -43,7 +43,7 @@ void APickup::BeginPlay()
 		GetWorldTimerManager().SetTimer(
 			BindOverlapTimer,
 			this,
-			APickup::BindOverlapTimerFinished,
+			&APickup::BindOverlapTimerFinished,
 			BindOverlapTime
 		);
 	}

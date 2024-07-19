@@ -80,6 +80,8 @@ void ABlasterCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+	SpawnDefaultWeapon();
+	UpdateHUDAmmo();
 	UpdateHUDHealth();
 	UpdateHUDShield();
 
@@ -188,6 +190,31 @@ void ABlasterCharacter::UpdateHUDShield()
 	if (BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDShield(Shield, MaxShield);
+	}
+}
+
+void ABlasterCharacter::UpdateHUDAmmo()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController && CombatComp && CombatComp->EquippedWeapon)
+	{
+		BlasterPlayerController->SetHUDCarriedAmmo(CombatComp->CarriedAmmo);
+		BlasterPlayerController->SetHUDWeaponAmmo(CombatComp->EquippedWeapon->GetAmmo());
+	}
+}
+
+void ABlasterCharacter::SpawnDefaultWeapon()
+{
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	UWorld* World = GetWorld();
+	if (BlasterGameMode && World && !bElimed && DefaultWeaponClass)
+	{
+		AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(DefaultWeaponClass);
+		StartingWeapon->bDestroyedWeapon = true;
+		if (CombatComp)
+		{
+			CombatComp->EquipWeapon(StartingWeapon);
+		}
 	}
 }
 
@@ -304,7 +331,14 @@ void ABlasterCharacter::Elim()
 {
 	if (CombatComp && CombatComp->EquippedWeapon)
 	{
-		CombatComp->EquippedWeapon->Dropped();
+		if (CombatComp->EquippedWeapon->bDestroyedWeapon)
+		{
+			CombatComp->EquippedWeapon->Destroy();
+		}
+		else
+		{
+			CombatComp->EquippedWeapon->Dropped();
+		}
 	}
 
 	MulticastElim();
