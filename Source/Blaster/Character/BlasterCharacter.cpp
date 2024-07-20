@@ -329,15 +329,15 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 
 void ABlasterCharacter::Elim()
 {
-	if (CombatComp && CombatComp->EquippedWeapon)
+	if (CombatComp)
 	{
-		if (CombatComp->EquippedWeapon->bDestroyedWeapon)
+		if (CombatComp->EquippedWeapon)
 		{
-			CombatComp->EquippedWeapon->Destroy();
+			DropOrDestroyWeapon(CombatComp->EquippedWeapon);
 		}
-		else
+		if (CombatComp->SecondaryWeapon)
 		{
-			CombatComp->EquippedWeapon->Dropped();
+			DropOrDestroyWeapon(CombatComp->SecondaryWeapon);
 		}
 	}
 
@@ -348,6 +348,18 @@ void ABlasterCharacter::Elim()
 		&ABlasterCharacter::ElimTimerFinished,
 		ElimDelay
 	);
+}
+
+void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
+{
+	if (Weapon->bDestroyedWeapon)
+	{
+		Weapon->Destroy();
+	}
+	else
+	{
+		Weapon->Dropped();
+	}
 }
 
 void ABlasterCharacter::Destroyed()
