@@ -105,7 +105,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Look);
 
-		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed);
+		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &ABlasterCharacter::EquipButtonPressed);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::CrouchButtonPressed);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &ABlasterCharacter::AimButtonPressed);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimButtonReleased);
@@ -485,15 +485,21 @@ void ABlasterCharacter::EquipButtonPressed(const FInputActionValue& Value)
 
 	if (CombatComp)
 	{
-		// Server
-		if (HasAuthority())
+		ServerEquipButtonPressed();
+	}
+}
+
+void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
+{
+	if (CombatComp)
+	{
+		if (OverlappingWeapon)
 		{
 			CombatComp->EquipWeapon(OverlappingWeapon);
 		}
-		// Client
-		else
+		else if (CombatComp->CanSwapWeapon())
 		{
-			ServerEquipButtonPressed();
+			CombatComp->SwapWeapon();
 		}
 	}
 }
@@ -753,14 +759,6 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		}
-	}
-}
-
-void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
-{
-	if (CombatComp)
-	{
-		CombatComp->EquipWeapon(OverlappingWeapon);
 	}
 }
 
