@@ -44,6 +44,8 @@ public:
 
 	void SpawnDefaultWeapon();
 
+	bool IsLocallyReloading();
+
 protected:
 	virtual void BeginPlay() override;
 	void Move(const FInputActionValue& Value);

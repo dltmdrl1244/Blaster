@@ -75,7 +75,6 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, WeaponState);
-	DOREPLIFETIME(AWeapon, Ammo);
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& HitResult)
@@ -110,26 +109,51 @@ void AWeapon::SetHUDAmmo()
 	}
 }
 
-void AWeapon::AddAmmo(int32 AmmoAmount)
-{
-	Ammo += AmmoAmount;
-	SetHUDAmmo();
-}
-
 void AWeapon::SpendRound()
 {
 	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
 	SetHUDAmmo();
+	if (HasAuthority())
+	{
+		ClientUpdateAmmo(Ammo);
+	}
+	else
+	{
+		SeqNumber++;
+	}
 }
 
-void AWeapon::OnRep_Ammo()
+void AWeapon::ClientUpdateAmmo_Implementation(int32 ServerAmmo)
 {
+	if (HasAuthority())
+	{
+		return;
+	}
+	Ammo = ServerAmmo;
+	--SeqNumber;
+	Ammo -= SeqNumber;
+	SetHUDAmmo();
+}
+
+void AWeapon::AddAmmo(int32 AmmoAmount)
+{
+	Ammo += AmmoAmount;
+	SetHUDAmmo();
+	ClientAddAmmo(AmmoAmount);
+}
+
+void AWeapon::ClientAddAmmo_Implementation(int32 AmmoAmount)
+{
+	if (HasAuthority())
+	{
+		return;
+	}
+	Ammo += AmmoAmount;
 	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
-	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombatComp() && BlasterOwnerCharacter->GetCombatComp()->IsShotgun())
+	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombatComp() && IsFull() && BlasterOwnerCharacter->GetCombatComp()->IsShotgun())
 	{
 		BlasterOwnerCharacter->GetCombatComp()->JumpToShotgunEnd();
 	}
-	SetHUDAmmo();
 }
 
 void AWeapon::OnRep_Owner()
@@ -274,10 +298,7 @@ void AWeapon::Fire(const FVector& HitTarget)
 			);
 		}
 	}
-	if (HasAuthority())
-	{
-		SpendRound();
-	}
+	SpendRound();
 }
 
 void AWeapon::Dropped()

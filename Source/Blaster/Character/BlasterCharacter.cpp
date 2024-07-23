@@ -218,6 +218,15 @@ void ABlasterCharacter::SpawnDefaultWeapon()
 	}
 }
 
+bool ABlasterCharacter::IsLocallyReloading()
+{
+	if (CombatComp == nullptr)
+	{
+		return false;
+	}
+	return CombatComp->bLocallyReloading;
+}
+
 void ABlasterCharacter::PlayFireMontage(bool bAiming)
 {
 	if (CombatComp == nullptr || CombatComp->EquippedWeapon == nullptr)
