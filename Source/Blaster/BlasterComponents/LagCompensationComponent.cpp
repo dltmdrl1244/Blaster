@@ -41,6 +41,30 @@ void ULagCompensationComponent::SaveFramePackage(FFramePackage& Package)
 	}
 }
 
+FFramePackage ULagCompensationComponent::InterpBetweenFrames(const FFramePackage& LeftFrame, const FFramePackage& RightFrame, float HitTime)
+{
+	const float Distance = RightFrame.Time - LeftFrame.Time;
+	const float InterpFraction = FMath::Clamp((HitTime - LeftFrame.Time) / Distance, 0.f, 1.f);
+	FFramePackage InterpFramePackage;
+	InterpFramePackage.Time = HitTime;
+
+	for (auto& RightIter : RightFrame.HitBoxInfo)
+	{
+		const FName& BoxInfoName = RightIter.Key;
+		const FBoxInformation& LeftBox = LeftFrame.HitBoxInfo[BoxInfoName];
+		const FBoxInformation& RightBox = RightFrame.HitBoxInfo[BoxInfoName];
+
+		FBoxInformation InterpBoxInfo;
+		InterpBoxInfo.Location = FMath::VInterpTo(LeftBox.Location, RightBox.Location, 1.f, InterpFraction);
+		InterpBoxInfo.Rotation = FMath::RInterpTo(LeftBox.Rotation, RightBox.Rotation, 1.f, InterpFraction);
+		InterpBoxInfo.BoxExtent = LeftBox.BoxExtent;
+
+		InterpFramePackage.HitBoxInfo.Add(BoxInfoName, InterpBoxInfo);
+	}
+
+	return InterpFramePackage;
+}
+
 void ULagCompensationComponent::ShowFramePackage(const FFramePackage Package, const FColor& Color)
 {
 	for (auto& BoxInfo : Package.HitBoxInfo)
@@ -54,6 +78,67 @@ void ULagCompensationComponent::ShowFramePackage(const FFramePackage Package, co
 			false,
 			4.f
 		);
+	}
+}
+
+void ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
+{
+	bool bReturn =
+		HitCharacter == nullptr ||
+		HitCharacter->GetLagCompensationComp() ||
+		HitCharacter->GetLagCompensationComp()->FrameHistory.GetHead() == nullptr ||
+		HitCharacter->GetLagCompensationComp()->FrameHistory.GetTail() == nullptr;
+	if (bReturn)
+	{
+		return;
+	}
+	bool bShouldInterpolate = true;
+
+	FFramePackage FrameToCheck;
+	// Frame History of the HitCharacter
+	const TDoubleLinkedList<FFramePackage>& History = HitCharacter->GetLagCompensationComp()->FrameHistory;
+	if (History.GetTail()->GetValue().Time > HitTime)
+	{
+		// too far back - too laggy to do SSR
+		return;
+	}
+	if (History.GetTail()->GetValue().Time == HitTime)
+	{
+		FrameToCheck = History.GetTail()->GetValue();
+		bShouldInterpolate = false;
+	}
+	if (History.GetHead()->GetValue().Time <= HitTime)
+	{
+		FrameToCheck = History.GetHead()->GetValue();
+		bShouldInterpolate = false;
+	}
+
+	TDoubleLinkedList<FFramePackage>::TDoubleLinkedListNode* Right = History.GetHead();
+	TDoubleLinkedList<FFramePackage>::TDoubleLinkedListNode* Left = History.GetHead();
+
+	while (Left->GetValue().Time > HitTime)
+	{
+		if (Left->GetNextNode() == nullptr)
+		{
+			break;
+		}
+
+		Left = Left->GetNextNode();
+		if (Left->GetValue().Time > HitTime)
+		{
+			Right = Left;
+		}
+	}
+	if (Left->GetValue().Time == HitTime)
+	{
+		FrameToCheck = Left->GetValue();
+		bShouldInterpolate = false;
+	}
+
+	if (bShouldInterpolate)
+	{
+		// Interpolate between Left and Right
+
 	}
 }
 
