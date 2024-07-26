@@ -95,6 +95,12 @@ public:
 	bool bUseScatter = false;
 
 protected:
+	UPROPERTY()
+	class ABlasterCharacter* BlasterOwnerCharacter;
+
+	UPROPERTY()
+	class ABlasterPlayerController* BlasterOwnerController;
+
 	virtual void BeginPlay() override;
 	virtual void OnWeaponStateSet();
 	virtual void OnEquipped();
@@ -128,13 +134,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = WeaponScatter)
 	float SphereRadius = 75.f;
 
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+
+	UPROPERTY(EditAnywhere)
+	bool bUseServerSideRewind = false;
 
 private:
-	UPROPERTY()
-	class ABlasterCharacter* BlasterOwnerCharacter;
-
-	UPROPERTY()
-	class ABlasterPlayerController* BlasterOwnerController;
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
@@ -188,4 +194,5 @@ public:
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
+	FORCEINLINE float GetDamage() const { return Damage; }
 };

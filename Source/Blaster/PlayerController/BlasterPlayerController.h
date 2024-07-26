@@ -34,6 +34,8 @@ public:
 	void HandleMatchStateStarted();
 	void HandleCooldown();
 
+	float STT = 0.f;
+
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
