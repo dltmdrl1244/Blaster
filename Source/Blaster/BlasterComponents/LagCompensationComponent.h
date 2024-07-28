@@ -70,7 +70,20 @@ public:
 	friend class ABlasterCharacter;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void ShowFramePackage(const FFramePackage Package, const FColor& Color);
+
+	/*
+	* HitScan
+	*/
 	FServerSideRewindResult ServerSideRewind(class ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime);
+
+	/*
+	* Projectile
+	*/
+	FServerSideRewindResult ProjectileServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime);
+
+	/*
+	* Shotgun
+	*/
 	FShotgunServerSideRewindResult ShotgunServerSideRewind(const TArray<ABlasterCharacter*> HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime);
 
 
@@ -96,13 +109,22 @@ protected:
 	void SaveFramePackage(FFramePackage& Package);
 	void SaveFramePackage();
 	FFramePackage InterpBetweenFrames(const FFramePackage& LeftFrame, const FFramePackage& RightFrame, float HitTime);
-	FServerSideRewindResult ConfirmHit(const FFramePackage& Package, ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation);
 	void CacheBoxPosition(ABlasterCharacter* HitCharacter, FFramePackage& OutFramePackage);
 	void MoveBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
 	void SetBoxesCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionType);
 	void SetHeadBoxesCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionType);
 	void SetCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionType);
 	FFramePackage GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime);
+
+	/*
+	* HitScan
+	*/
+	FServerSideRewindResult ConfirmHit(const FFramePackage& Package, ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation);
+
+	/*
+	* Projectile
+	*/
+	FServerSideRewindResult ProjectileConfirmHit(const FFramePackage& Package, ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime);
 
 	/*
 	* Shotgun
