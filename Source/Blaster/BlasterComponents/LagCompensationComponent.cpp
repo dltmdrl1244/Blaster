@@ -189,7 +189,7 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 	PathParams.StartLocation = TraceStart;
 	PathParams.SimFrequency = 15.f;
 	PathParams.ProjectileRadius = 5.f;
-	PathParams.bTraceWithChannel = ECC_HitBox;
+	PathParams.TraceChannel = ECC_HitBox;
 	PathParams.ActorsToIgnore.Add(GetOwner());
 	PathParams.DrawDebugTime = 5.f;
 	PathParams.DrawDebugType = EDrawDebugTrace::ForDuration;
@@ -371,10 +371,13 @@ void ULagCompensationComponent::MoveBoxes(ABlasterCharacter* HitCharacter, const
 	{
 		if (BoxComponent.Value != nullptr)
 		{
-			FName BoxName = BoxComponent.Key;
-			BoxComponent.Value->SetWorldLocation(Package.HitBoxInfo[BoxName].Location);
-			BoxComponent.Value->SetWorldRotation(Package.HitBoxInfo[BoxName].Rotation);
-			BoxComponent.Value->SetBoxExtent(Package.HitBoxInfo[BoxName].BoxExtent);
+			const FBoxInformation* BoxValue = Package.HitBoxInfo.Find(BoxComponent.Key);
+			if (BoxValue)
+			{
+				BoxComponent.Value->SetWorldLocation(BoxValue->Location);
+				BoxComponent.Value->SetWorldRotation(BoxValue->Rotation);
+				BoxComponent.Value->SetBoxExtent(BoxValue->BoxExtent);
+			}
 		}
 	}
 }
@@ -535,6 +538,21 @@ void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharac
 			DamageCauser->GetDamage(),
 			Character->Controller,
 			DamageCauser,
+			UDamageType::StaticClass()
+		);
+	}
+}
+
+void ULagCompensationComponent::ServerProjectileScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime)
+{
+	FServerSideRewindResult ConfirmedResult = ProjectileServerSideRewind(HitCharacter, TraceStart, InitialVelocity, HitTime);
+	if (Character && Character->GetEquippedWeapon() && HitCharacter && ConfirmedResult.bHitConfirmed)
+	{
+		UGameplayStatics::ApplyDamage(
+			HitCharacter,
+			Character->GetEquippedWeapon()->GetDamage(),
+			Character->Controller,
+			Character->GetEquippedWeapon(),
 			UDamageType::StaticClass()
 		);
 	}

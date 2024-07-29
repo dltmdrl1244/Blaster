@@ -40,7 +40,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 				else
 				{
 					SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-					SpawnedProjectile->bUseServerSideRewind = false;
+					SpawnedProjectile->bUseServerSideRewind = true;
 				}
 			}
 			else // Client, using SSR
