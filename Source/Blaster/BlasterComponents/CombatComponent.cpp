@@ -246,24 +246,22 @@ void UCombatComponent::SwapWeapon()
 	{
 		return;
 	}
-	if (CombatState != ECombatState::ECS_Unoccupied)
+	if (CombatState != ECombatState::ECS_Unoccupied || Character == nullptr)
 	{
 		return;
 	}
+
+	Character->PlaySwapMontage();
+	Character->bFinishSwapping = false;
+	CombatState = ECombatState::ECS_SwappingWeapon;
+	if (SecondaryWeapon)
+	{
+		SecondaryWeapon->EnableCustomDepth(false);
+	}
+
 	AWeapon* Temp = EquippedWeapon;
 	EquippedWeapon = SecondaryWeapon;
 	SecondaryWeapon = Temp;
-
-	// Newly Equipped Weapon
-	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	AttachActorToRightHand(EquippedWeapon);
-	EquippedWeapon->SetHUDAmmo();
-	UpdateCarriedAmmo();
-	PlayEquipWeaponSound(EquippedWeapon);
-
-	// Newly Secondary Weapon
-	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
-	AttachActorToBackpack(SecondaryWeapon);
 }
 
 void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
@@ -614,6 +612,12 @@ void UCombatComponent::OnRep_CombatState()
 			ShowAttachedGrenade(true);
 		}
 		break;
+	case ECombatState::ECS_SwappingWeapon:
+		if (Character && !Character->IsLocallyControlled())
+		{
+			Character->PlaySwapMontage();
+		}
+		break;
 	}
 }
 
@@ -739,6 +743,37 @@ void UCombatComponent::LaunchGrenade()
 	{
 		ServerLaunchGrenade(HitTarget);
 	}
+}
+
+void UCombatComponent::FinishSwap()
+{
+	if (Character && Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+	}
+
+	if (Character)
+	{
+		Character->bFinishSwapping = true;
+	}
+	if (SecondaryWeapon)
+	{
+		SecondaryWeapon->EnableCustomDepth(true);
+	}
+}
+
+void UCombatComponent::FinishSwapAttachWeapon()
+{
+	// Newly Equipped Weapon
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	AttachActorToRightHand(EquippedWeapon);
+	EquippedWeapon->SetHUDAmmo();
+	UpdateCarriedAmmo();
+	PlayEquipWeaponSound(EquippedWeapon);
+
+	// Newly Secondary Weapon
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
+	AttachActorToBackpack(SecondaryWeapon);
 }
 
 void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuantize& Target)
@@ -933,12 +968,12 @@ void UCombatComponent::FireTimerFinished()
 bool UCombatComponent::CanFire()
 {
 	if (!EquippedWeapon) return false;
-	if (bLocallyReloading) return false;
 	if (!EquippedWeapon->IsEmpty() &&
 		bCanFire && CombatState == ECombatState::ECS_Reloading &&
 		IsShotgun()) return true;
 	if (EquippedWeapon->IsEmpty()) return false;
 	if (!bCanFire) return false;
+	if (bLocallyReloading) return false;
 	if (CombatState != ECombatState::ECS_Unoccupied) return false;
 
 	return true;

@@ -26,6 +26,7 @@ public:
 	void Reload();
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
+
 	void FireButtonPressed(bool bPressed);
 
 	UFUNCTION(BlueprintCallable)
@@ -39,6 +40,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void LaunchGrenade();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishSwap();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishSwapAttachWeapon();
 
 	UFUNCTION(Server, Reliable)
 	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
