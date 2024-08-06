@@ -39,6 +39,8 @@ public:
 
 	FHighPingDelegate HighPingDelegate;
 
+	void ShowReturnToMainMenu();
+
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
@@ -77,6 +79,15 @@ private:
 
 	UPROPERTY()
 	class ABlasterGameMode* BlasterGameMode;
+
+	/*
+	* Return to Main menu
+	*/
+	UPROPERTY(EditAnywhere, Category = HUD)
+	TSubclassOf<class UUserWidget> ReturnToMainMenuWidget;
+	UPROPERTY()
+	class UReturnToMainMenu* ReturnToMainMenu;
+	bool bReturnToMainMenuOpen = false;
 
 	float MatchTime = 0.f;
 	float WarmupTime = 0.f;

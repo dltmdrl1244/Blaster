@@ -15,6 +15,7 @@
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Components/Image.h"
+#include "Blaster/HUD/ReturnToMainMenu.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
@@ -61,6 +62,28 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		{
 			StopHighPingWarning();
 			PingAnimationRunningTime = 0.f;
+		}
+	}
+}
+
+void ABlasterPlayerController::ShowReturnToMainMenu()
+{
+	if (ReturnToMainMenuWidget == nullptr)
+	{
+		return;
+	}
+
+	ReturnToMainMenu = ReturnToMainMenu == nullptr ? CreateWidget<UReturnToMainMenu>(this, ReturnToMainMenuWidget) : ReturnToMainMenu;
+	if (ReturnToMainMenu)
+	{
+		bReturnToMainMenuOpen = !bReturnToMainMenuOpen;
+		if (bReturnToMainMenuOpen)
+		{
+			ReturnToMainMenu->MenuSetup();
+		}
+		else
+		{
+			ReturnToMainMenu->MenuTearDown();
 		}
 	}
 }

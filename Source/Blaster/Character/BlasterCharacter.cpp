@@ -200,6 +200,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ABlasterCharacter::FireButtonReleased);
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::ReloadButtonPressed);
 		EnhancedInputComponent->BindAction(ThrowGrenadeAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::ThrowGrenadeButtonPressed);
+		EnhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::QuitButtonPressed);
 	}
 }
 
@@ -721,6 +722,15 @@ void ABlasterCharacter::ThrowGrenadeButtonPressed(const FInputActionValue& Value
 	if (CombatComp)
 	{
 		CombatComp->ThrowGrenade();
+	}
+}
+
+void ABlasterCharacter::QuitButtonPressed(const FInputActionValue& Value)
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->ShowReturnToMainMenu();
 	}
 }
 
