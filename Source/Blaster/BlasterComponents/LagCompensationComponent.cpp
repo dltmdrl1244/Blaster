@@ -7,15 +7,12 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blaster/Weapon/Weapon.h"
-#include "DrawDebugHelpers.h"
 
 ULagCompensationComponent::ULagCompensationComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
 }
-
-
 
 void ULagCompensationComponent::BeginPlay()
 {
@@ -123,14 +120,6 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 	// Headshot
 	if (ConfirmHitResult.bBlockingHit)
 	{
-		if (ConfirmHitResult.Component.IsValid())
-		{
-			UBoxComponent* Box = Cast<UBoxComponent>(ConfirmHitResult.Component);
-			if (Box)
-			{
-				DrawDebugBox(GetWorld(), Box->GetComponentLocation(), Box->GetScaledBoxExtent(), FQuat(Box->GetComponentRotation()), FColor::Red, false, 8.f);
-			}
-		}
 		MoveBoxes(HitCharacter, CurrentFrame);
 		SetBoxesCollision(HitCharacter, ECollisionEnabled::NoCollision);
 		SetCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryAndPhysics);
@@ -151,14 +140,6 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 
 	if (ConfirmHitResult.bBlockingHit)
 	{
-		if (ConfirmHitResult.Component.IsValid())
-		{
-			UBoxComponent* Box = Cast<UBoxComponent>(ConfirmHitResult.Component);
-			if (Box)
-			{
-				DrawDebugBox(GetWorld(), Box->GetComponentLocation(), Box->GetScaledBoxExtent(), FQuat(Box->GetComponentRotation()), FColor::Green, false, 8.f);
-			}
-		}
 		return FServerSideRewindResult{ true, false };
 	}
 	else
@@ -191,8 +172,6 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 	PathParams.ProjectileRadius = 5.f;
 	PathParams.TraceChannel = ECC_HitBox;
 	PathParams.ActorsToIgnore.Add(GetOwner());
-	PathParams.DrawDebugTime = 5.f;
-	PathParams.DrawDebugType = EDrawDebugTrace::ForDuration;
 
 	FPredictProjectilePathResult PathResult;
 	UGameplayStatics::PredictProjectilePath(this, PathParams, PathResult);
@@ -200,14 +179,6 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 	// Headshot
 	if (PathResult.HitResult.bBlockingHit)
 	{
-		if (PathResult.HitResult.Component.IsValid())
-		{
-			UBoxComponent* Box = Cast<UBoxComponent>(PathResult.HitResult.Component);
-			if (Box)
-			{
-				DrawDebugBox(GetWorld(), Box->GetComponentLocation(), Box->GetScaledBoxExtent(), FQuat(Box->GetComponentRotation()), FColor::Red, false, 8.f);
-			}
-		}
 		MoveBoxes(HitCharacter, CurrentFrame);
 		SetBoxesCollision(HitCharacter, ECollisionEnabled::NoCollision);
 		SetCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryAndPhysics);
@@ -225,14 +196,6 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 	// Bodyshot
 	if (PathResult.HitResult.bBlockingHit)
 	{
-		if (PathResult.HitResult.Component.IsValid())
-		{
-			UBoxComponent* Box = Cast<UBoxComponent>(PathResult.HitResult.Component);
-			if (Box)
-			{
-				DrawDebugBox(GetWorld(), Box->GetComponentLocation(), Box->GetScaledBoxExtent(), FQuat(Box->GetComponentRotation()), FColor::Green, false, 8.f);
-			}
-		}
 		return FServerSideRewindResult{ true, false };
 	}
 	else
@@ -428,6 +391,7 @@ void ULagCompensationComponent::SetCharacterMeshCollision(ABlasterCharacter* Hit
 
 void ULagCompensationComponent::ShowFramePackage(const FFramePackage Package, const FColor& Color)
 {
+	/*
 	for (auto& BoxInfo : Package.HitBoxInfo)
 	{
 		DrawDebugBox(
@@ -440,6 +404,7 @@ void ULagCompensationComponent::ShowFramePackage(const FFramePackage Package, co
 			4.f
 		);
 	}
+	*/
 }
 
 FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)

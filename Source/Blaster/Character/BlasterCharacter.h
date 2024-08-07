@@ -287,7 +287,7 @@ private:
 	UCurveFloat* DissolveCurve;
 
 	/*
-	* Elim Bot
+	* Elim Effects
 	*/
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* ElimBotEffect;
@@ -295,7 +295,7 @@ private:
 	UParticleSystemComponent* ElimBotComponent;
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ElimBotSound;
-
+	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
 
 	/*

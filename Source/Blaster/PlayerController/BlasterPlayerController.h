@@ -40,6 +40,9 @@ public:
 	FHighPingDelegate HighPingDelegate;
 
 	void ShowReturnToMainMenu();
+	void BroadCastElim(APlayerState* Attacker, APlayerState* Victim);
+	UFUNCTION(Client, Reliable)
+	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
 
 protected:
 	virtual void BeginPlay() override;
