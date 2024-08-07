@@ -57,8 +57,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 						BlasterCharacter,
 						Start,
 						FireHit.ImpactPoint,
-						BlasterOwnerController->GetServerTime() - BlasterOwnerController->STT,
-						this
+						BlasterOwnerController->GetServerTime() - BlasterOwnerController->STT
 					);
 				}
 			}
