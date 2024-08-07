@@ -28,8 +28,8 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 		const FVector Start = SocketTransform.GetLocation();
 
 		// Maps hit character to numbers of times hit
-		TMap<ABlasterCharacter*, uint32> HitMap;
-		for (const FVector_NetQuantize HitTarget : HitTargets)
+		TMap<ABlasterCharacter*, float> HitMap;
+		for (const FVector_NetQuantize& HitTarget : HitTargets)
 		{
 			FHitResult FireHit;
 			WeaponTraceHit(Start, HitTarget, FireHit);
@@ -37,13 +37,15 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
 			if (BlasterCharacter)
 			{
+				const float DamageToApply = FireHit.BoneName.ToString() == FString("head") ? HeadshotDamage : Damage;
+
 				if (HitMap.Contains(BlasterCharacter))
 				{
-					HitMap[BlasterCharacter]++;
+					HitMap[BlasterCharacter] += DamageToApply;
 				}
 				else
 				{
-					HitMap.Emplace(BlasterCharacter, 1);
+					HitMap.Emplace(BlasterCharacter, DamageToApply);
 				}
 
 				if (ImpactParticles)
@@ -75,11 +77,13 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 			{
 				if (HitPair.Key && InstigatorController)
 				{
-					if (HasAuthority() && !OwnerPawn->IsLocallyControlled())
+					bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
+
+					if (HasAuthority() && bCauseAuthDamage)
 					{
 						UGameplayStatics::ApplyDamage(
 							HitPair.Key,
-							Damage * HitPair.Value,
+							HitPair.Value,
 							InstigatorController,
 							this,
 							UDamageType::StaticClass()
@@ -89,7 +93,7 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 				}
 			}
 		}
-		if (!HasAuthority() && bUseServerSideRewind && OwnerPawn->IsLocallyControlled())
+		if (!HasAuthority() && bUseServerSideRewind)
 		{
 			BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
 			BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
