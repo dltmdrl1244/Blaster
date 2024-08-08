@@ -25,14 +25,18 @@ public:
 	void SetHUDMatchCountdown(float CountdownTime);
 	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void SetHUDGrenades(int32 Grenades);
+	void SetHUDRedTeamScore(int32 RedScore);
+	void SetHUDBlueTeamScore(int32 BlueScore);
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	virtual float GetServerTime(); // synced with server world clock
 	virtual void ReceivedPlayer() override;
-	void OnMatchStateSet(FName State);
-	void HandleMatchStateStarted();
+
+	void HideTeamScore();
+	void InitTeamScore();
+	void OnMatchStateSet(FName State, bool bTeamMatch = false);
+	void HandleMatchStateStarted(bool bTeamMatch = false);
 	void HandleCooldown();
 
 	float STT = 0.f;
@@ -75,6 +79,11 @@ protected:
 	void HighPingWarning();
 	void StopHighPingWarning();
 	void CheckPing(float DeltaTime);
+
+	UPROPERTY(ReplicatedUsing = OnRep_ShowTeamScore)
+	bool bShowTeamScore = false;
+	UFUNCTION()
+	void OnRep_ShowTeamScore();
 
 private:
 	UPROPERTY()

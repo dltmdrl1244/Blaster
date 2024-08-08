@@ -4,7 +4,14 @@
 #include "TeamGameMode.h"
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Kismet/GameplayStatics.h"
+
+
+ATeamGameMode::ATeamGameMode()
+{
+	BTeamMatch = true;
+}
 
 void ATeamGameMode::HandleMatchHasStarted()
 {
@@ -76,6 +83,25 @@ float ATeamGameMode::CalculateDamage(AController* Attacker, AController* Victim,
 	}
 
 	return BaseDamage;
+}
+
+void ATeamGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
+{
+	Super::PlayerEliminated(ElimmedCharacter, VictimController, AttackerController);
+
+	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+	ABlasterPlayerState* AttackerPlayerState = Cast<ABlasterPlayerState>(AttackerController->PlayerState);
+	if (BGameState && AttackerPlayerState)
+	{
+		if (AttackerPlayerState->GetTeam() == ETeam::ETeam_BlueTeam)
+		{
+			BGameState->BlueTeamScores();
+		}
+		else if (AttackerPlayerState->GetTeam() == ETeam::ETeam_RedTeam)
+		{
+			BGameState->RedTeamScores();
+		}
+	}
 }
 
 void ATeamGameMode::AssignTeam(ABlasterPlayerState* PlayerState)

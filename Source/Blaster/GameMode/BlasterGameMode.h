@@ -38,6 +38,8 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float CooldownTime = 5.f;
 
+	bool BTeamMatch = false;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnMatchStateSet() override;
