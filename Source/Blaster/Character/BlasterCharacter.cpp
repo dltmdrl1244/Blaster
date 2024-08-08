@@ -209,7 +209,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	RotateInPlace(DeltaTime);
-	HideCameraIfCharacterClose();
+	HideCharacterIfCameraClose();
 	PollInit();
 }
 
@@ -510,6 +510,7 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 	// Disable Collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// Spawn Elim Bot
 	if (ElimBotEffect)
@@ -921,7 +922,7 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 	}
 }
 
-void ABlasterCharacter::HideCameraIfCharacterClose()
+void ABlasterCharacter::HideCharacterIfCameraClose()
 {
 	if (!IsLocallyControlled())
 	{
@@ -935,6 +936,10 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		{
 			CombatComp->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
 		}
+		if (CombatComp && CombatComp->SecondaryWeapon && CombatComp->SecondaryWeapon->GetWeaponMesh())
+		{
+			CombatComp->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
 	}
 	else
 	{
@@ -942,6 +947,10 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		if (CombatComp && CombatComp->EquippedWeapon && CombatComp->EquippedWeapon->GetWeaponMesh())
 		{
 			CombatComp->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+		if (CombatComp && CombatComp->SecondaryWeapon && CombatComp->SecondaryWeapon->GetWeaponMesh())
+		{
+			CombatComp->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = false;
 		}
 	}
 }
