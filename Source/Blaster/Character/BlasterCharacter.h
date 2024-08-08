@@ -9,6 +9,7 @@
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
 #include "Blaster/BlasterTypes/CombatState.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "BlasterCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
@@ -62,6 +63,8 @@ public:
 	void ServerLeaveGame();
 
 	FOnLeftGame OnLeftGame;
+
+	void SetTeamColor(ETeam Team);
 
 protected:
 	virtual void BeginPlay() override;
@@ -186,6 +189,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class ULagCompensationComponent* LagCompenstationComp;
 
+	UPROPERTY()
+	class ABlasterGameMode* BlasterGameMode;
+
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 
@@ -279,12 +285,29 @@ private:
 	// Dynamic instnace that we can change at runtime
 	UPROPERTY(VisibleAnywhere, Category = Elim)
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
+
 	// Material instance set on the Blueprint, used with the dynamic material instnace
-	UPROPERTY(EditAnywhere, Category = Elim)
+	UPROPERTY(VisibleAnywhere, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance;
 
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* DissolveCurve;
+
+	/*
+	* Team Color
+	*/
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* OriginalMaterial;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* RedDissolveMatInst;
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* RedTeamMaterial;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* BlueDissolveMatInst;
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* BlueTeamMaterial;
 
 	/*
 	* Elim Effects

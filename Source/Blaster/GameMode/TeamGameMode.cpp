@@ -60,6 +60,24 @@ void ATeamGameMode::Logout(AController* ExitingPlayer)
 	}
 }
 
+float ATeamGameMode::CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage)
+{
+	ABlasterPlayerState* AttackerPState = Attacker->GetPlayerState<ABlasterPlayerState>();
+	ABlasterPlayerState* VictimPState = Victim->GetPlayerState<ABlasterPlayerState>();
+
+	if (AttackerPState == nullptr || VictimPState == nullptr)
+	{
+		return BaseDamage;
+	}
+
+	if (VictimPState->GetTeam() == AttackerPState->GetTeam())
+	{
+		return 0.f;
+	}
+
+	return BaseDamage;
+}
+
 void ATeamGameMode::AssignTeam(ABlasterPlayerState* PlayerState)
 {
 	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
