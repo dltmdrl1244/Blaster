@@ -247,6 +247,7 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 		{
 			SetHUDGrenades(BlasterCharacter->GetCombatComp()->GetGrenades());
 		}
+		SetHUDScore(PlayerState->GetScore());
 	}
 }
 
@@ -449,10 +450,16 @@ void ABlasterPlayerController::SetHUDTime()
 
 	if (HasAuthority())
 	{
+		if (BlasterGameMode == nullptr)
+		{
+			BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+			LevelStartingTime = BlasterGameMode->LevelStartingTime;
+		}
+
 		BlasterGameMode = BlasterGameMode == nullptr ? Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this)) : BlasterGameMode;
 		if (BlasterGameMode)
 		{
-			SecondsLeft = FMath::CeilToInt(BlasterGameMode->GetCounddownTime() + LevelStartingTime);
+			SecondsLeft = FMath::CeilToInt(BlasterGameMode->GetCountdownTime() + LevelStartingTime);
 		}
 	}
 
