@@ -13,15 +13,10 @@ struct FHUDPackage
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY()
 	UTexture2D* CrosshairsCenter;
-	UPROPERTY()
 	UTexture2D* CrosshairsLeft;
-	UPROPERTY()
 	UTexture2D* CrosshairsRight;
-	UPROPERTY()
 	UTexture2D* CrosshairsTop;
-	UPROPERTY()
 	UTexture2D* CrosshairsBottom;
 	float CrosshairSpread;
 	FLinearColor CrosshairsColor;
@@ -44,14 +39,25 @@ public:
 	UPROPERTY(EditAnywhere, Category = Announcements)
 	TSubclassOf<UUserWidget> AnnouncementClass;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> ChattingClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> ChatMessageClass;
+
 	UPROPERTY()
 	class UAnnouncement* Announcement;
 	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
+	UPROPERTY()
+	class UChatting* Chatting;
 
 	void AddCharacterOverlay();
 	void AddAnnouncement();
+	void AddChatting();
+	void AddChatMessage(const FString& Message);
 	void AddElimAnnouncement(FString Attacker, FString Victim);
+
 
 protected:
 	virtual void PostInitializeComponents() override;

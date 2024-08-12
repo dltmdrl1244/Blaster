@@ -6,9 +6,12 @@
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
 #include "ElimAnnouncement.h"
+#include "Chatting.h"
+#include "ChatMessage.h"
 #include "Components/HorizontalBox.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Components/ScrollBox.h"
 
 void ABlasterHUD::PostInitializeComponents()
 {
@@ -24,6 +27,10 @@ void ABlasterHUD::PostInitializeComponents()
 		if (AnnouncementClass)
 		{
 			Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
+		}
+		if (ChattingClass)
+		{
+			Chatting = CreateWidget<UChatting>(PlayerController, ChattingClass);
 		}
 	}
 }
@@ -64,6 +71,32 @@ void ABlasterHUD::DrawHUD()
 		{
 			FVector2D Spread(0.f, SpreadScaled);
 			DrawCrosshair(HUDPackage.CrosshairsBottom, ViewportCenter, Spread, HUDPackage.CrosshairsColor);
+		}
+	}
+}
+
+void ABlasterHUD::AddChatting()
+{
+	if (Chatting)
+	{
+		Chatting->AddToViewport();
+	}
+}
+
+void ABlasterHUD::AddChatMessage(const FString& Message)
+{
+	OwningPlayer = OwningPlayer == nullptr ? GetOwningPlayerController() : OwningPlayer;
+	Chatting = Chatting == nullptr ? CreateWidget<UChatting>(OwningPlayer, ChattingClass) : Chatting;
+
+	if (OwningPlayer && ChattingClass && Chatting && ChatMessageClass)
+	{
+		UChatMessage* ChatMessageWidget = CreateWidget<UChatMessage>(OwningPlayer, ChatMessageClass);
+		if (ChatMessageWidget)
+		{
+			ChatMessageWidget->SetChatMessage(Message);
+			Chatting->ChatScrollBox->AddChild(ChatMessageWidget);
+			Chatting->ChatScrollBox->ScrollToEnd();
+			Chatting->ChatScrollBox->bAnimateWheelScrolling = true;
 		}
 	}
 }

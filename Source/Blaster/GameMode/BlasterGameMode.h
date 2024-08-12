@@ -40,6 +40,8 @@ public:
 
 	bool BTeamMatch = false;
 
+	void SendChatMessage(const FString& Message);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnMatchStateSet() override;
@@ -48,5 +50,5 @@ private:
 	float CountdownTime = 0.f;
 
 public:
-	FORCEINLINE float GetCountdownTime() const { return CountdownTime; }
+	FORCEINLINE float GetCounddownTime() const { return CountdownTime; }
 };

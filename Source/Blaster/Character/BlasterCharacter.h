@@ -80,6 +80,7 @@ protected:
 	void ReloadButtonPressed(const FInputActionValue& Value);
 	void ThrowGrenadeButtonPressed(const FInputActionValue& Value);
 	void QuitButtonPressed(const FInputActionValue& Value);
+	void ChatButtonPressed(const FInputActionValue& Value);
 
 	void AimOffset(float DeltaTime);
 	void CalculateAO_Pitch();
@@ -169,6 +170,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* QuitAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ChatAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
@@ -260,6 +264,7 @@ private:
 	UFUNCTION()
 	void OnRep_Shield(float LastShield);
 
+	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
 
 	bool bElimed = false;

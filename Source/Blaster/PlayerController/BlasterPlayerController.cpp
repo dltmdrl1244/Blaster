@@ -5,6 +5,8 @@
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/HUD/CharacterOverlay.h"
 #include "Blaster/HUD/Announcement.h"
+#include "Blaster/HUD/Chatting.h"
+#include "Blaster/HUD/ReturnToMainMenu.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Blaster/Character/BlasterCharacter.h"
@@ -15,15 +17,14 @@
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Components/Image.h"
-#include "Blaster/HUD/ReturnToMainMenu.h"
 #include "Blaster/BlasterTypes/Announcement.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 	ServerCheckMatchState();
+	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 }
 
 void ABlasterPlayerController::Tick(float DeltaTime)
@@ -247,7 +248,6 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 		{
 			SetHUDGrenades(BlasterCharacter->GetCombatComp()->GetGrenades());
 		}
-		SetHUDScore(PlayerState->GetScore());
 	}
 }
 
@@ -450,16 +450,10 @@ void ABlasterPlayerController::SetHUDTime()
 
 	if (HasAuthority())
 	{
-		if (BlasterGameMode == nullptr)
-		{
-			BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
-			LevelStartingTime = BlasterGameMode->LevelStartingTime;
-		}
-
 		BlasterGameMode = BlasterGameMode == nullptr ? Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this)) : BlasterGameMode;
 		if (BlasterGameMode)
 		{
-			SecondsLeft = FMath::CeilToInt(BlasterGameMode->GetCountdownTime() + LevelStartingTime);
+			SecondsLeft = FMath::CeilToInt(BlasterGameMode->GetCounddownTime() + LevelStartingTime);
 		}
 	}
 
@@ -580,6 +574,7 @@ void ABlasterPlayerController::HandleMatchStateStarted(bool bTeamMatch)
 	if (BlasterHUD)
 	{
 		BlasterHUD->AddCharacterOverlay();
+		BlasterHUD->AddChatting();
 		if (BlasterHUD->Announcement)
 		{
 			BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
@@ -685,5 +680,32 @@ FString ABlasterPlayerController::GetTeamInfoText(ABlasterGameState* BlasterGame
 	else
 	{
 		return Announcement::TeamTied;
+	}
+}
+
+void ABlasterPlayerController::ActivateChatBox()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD && BlasterHUD->Chatting)
+	{
+		BlasterHUD->Chatting->ActivateChatText();
+	}
+}
+
+void ABlasterPlayerController::ServerSendChatMessage_Implementation(const FString& Message)
+{
+	ABlasterGameMode* GameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	if (GameMode)
+	{
+		GameMode->SendChatMessage(Message);
+	}
+}
+
+void ABlasterPlayerController::ClientAddChatMessage_Implementation(const FString& Message)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD)
+	{
+		BlasterHUD->AddChatMessage(Message);
 	}
 }

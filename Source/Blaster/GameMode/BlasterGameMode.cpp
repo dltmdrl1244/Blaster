@@ -146,3 +146,20 @@ void ABlasterGameMode::PlayerLeftGame(ABlasterPlayerState* PlayerLeaving)
 		LeavingCharacter->Elim(true);
 	}
 }
+
+void ABlasterGameMode::SendChatMessage(const FString& Message)
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(*It);
+		if (BlasterPlayerController)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ClientAddChatMesage"));
+			BlasterPlayerController->ClientAddChatMessage(Message);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Wrong"));
+		}
+	}
+}

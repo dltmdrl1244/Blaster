@@ -228,6 +228,9 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::ReloadButtonPressed);
 		EnhancedInputComponent->BindAction(ThrowGrenadeAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::ThrowGrenadeButtonPressed);
 		EnhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::QuitButtonPressed);
+
+		EnhancedInputComponent->BindAction(ChatAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::ChatButtonPressed);
+
 	}
 }
 
@@ -774,6 +777,15 @@ void ABlasterCharacter::QuitButtonPressed(const FInputActionValue& Value)
 	if (BlasterPlayerController)
 	{
 		BlasterPlayerController->ShowReturnToMainMenu();
+	}
+}
+
+void ABlasterCharacter::ChatButtonPressed(const FInputActionValue& Value)
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->ActivateChatBox();
 	}
 }
 

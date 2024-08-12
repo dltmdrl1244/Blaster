@@ -27,6 +27,7 @@ public:
 	void SetHUDGrenades(int32 Grenades);
 	void SetHUDRedTeamScore(int32 RedScore);
 	void SetHUDBlueTeamScore(int32 BlueScore);
+
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -47,6 +48,18 @@ public:
 	void BroadCastElim(APlayerState* Attacker, APlayerState* Victim);
 	UFUNCTION(Client, Reliable)
 	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
+
+	/*
+	* Chat
+	*/
+	UFUNCTION()
+	void ActivateChatBox();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSendChatMessage(const FString& Message);
+
+	UFUNCTION(Client, Reliable)
+	void ClientAddChatMessage(const FString& Message);
 
 protected:
 	virtual void BeginPlay() override;
@@ -94,6 +107,12 @@ private:
 
 	UPROPERTY()
 	class ABlasterGameMode* BlasterGameMode;
+
+	// Chat
+	UPROPERTY(EditAnywhere, Category = HUD)
+	TSubclassOf<class UUserWidget> ChattingClass;
+	UPROPERTY()
+	class UChatting* Chatting;
 
 	/*
 	* Return to Main menu
